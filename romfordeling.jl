@@ -16,7 +16,11 @@ rom = [2, 2, 3]
 
 m = Model(solver = CbcSolver())
 
+# rf[r, d]: Deltaker d bor på rom r. (RomFordeling)
 @variable(m, rf[1:length(rom), 1:antalldeltakere], Bin)
+# bsr[i, j, r]: Deltaker i og deltaker j bor sammen på rom r.
+@variable(m, bsr[1:antalldeltakere, 1:antalldeltakere, 1:length(rom)], Bin)
+#
 
 # Dummymålfunksjon: Plassere flest mulig personer på rom
 @objective(m, Max, sum([rf[r, i] * rf[r, j] for r in 1:length(rom), i in 1:antalldeltakere, j in 1:antalldeltakere if ønsker[i,j] == 1]))

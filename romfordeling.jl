@@ -8,13 +8,15 @@ using Cbc
 println("\n\n")
 
 antalldeltakere = 6
-rom = [2, 2, 3]
+rom = [2, 2, 3, 5]
 ønsker = fill(0, (antalldeltakere, antalldeltakere))
 
 # Fylle ønskematrisen
 ønsker[1, 2] = 1
-ønsker[3, 4] = 1
-ønsker[2, 3] = 1
+ønsker[1, 3] = 1
+ønsker[1, 4] = 1
+ønsker[1, 5] = 1
+ønsker[1, 6] = 1
 
 m = Model(solver = CbcSolver())
 
@@ -44,9 +46,9 @@ for i in 1:antalldeltakere
 end
 
 # Dummymålfunksjon: Plassere flest mulig personer på rom
-@objective(m, Max, sum([sum(bsr[i, j, :]) for r in 1:length(rom), i in 1:antalldeltakere, j in 1:antalldeltakere if ønsker[i,j] == 1]))
+@objective(m, Max, sum([sum(bsr[i, j, :]) for i in 1:antalldeltakere, j in 1:antalldeltakere if ønsker[i,j] == 1]))
 
-println(m)
+# println(m)
 
 status = solve(m)
 

@@ -7,7 +7,7 @@ Bruker JuMP.jl og Cbc.jl, som ikke er kompatible med Julia 1.0 enda. Jeg har bru
 Gå inn i rotmappen i terminal og start Julia 0.7. Skriv `]` for å gå inn i Pkg3-modus. Skriv dette:
 
 ```
-activate xcom-rom
+activate .
 instantiate
 ```
 

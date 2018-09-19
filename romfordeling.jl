@@ -9,7 +9,7 @@ println("\n\n")
 
 antalldeltakere = 6
 rom = [2, 2, 3, 5]
-ønsker = fill(0, (antalldeltakere, antalldeltakere))
+ønsker = fill(zero(Int), (antalldeltakere, antalldeltakere))
 
 # Fylle ønskematrisen
 ønsker[1, 2] = 1
@@ -18,11 +18,14 @@ rom = [2, 2, 3, 5]
 ønsker[1, 5] = 1
 ønsker[1, 6] = 1
 
+# MODELLEN
 m = Model(solver = CbcSolver())
 
+# HOVEDVARIABLER
 # bori[d, r]: Deltaker d bor på rom r. (RomFordeling)
 @variable(m, bori[1:antalldeltakere, 1:length(rom)], Bin)
 
+# KRAV
 # Hver person bor på ett rom.
 for deltakernummer in 1:antalldeltakere
     @constraint(m, sum(bori[deltakernummer, :]) == 1)
@@ -32,7 +35,7 @@ for romnummer in 1:length(rom)
     @constraint(m, sum(bori[:, romnummer]) <= rom[romnummer])
 end
 
-#HJELPEVARIABLER
+# HJELPEVARIABLER
 # bsr[i, j, r]: Deltaker i og deltaker j bor sammen på rom r.
 @variable(m, bsr[1:antalldeltakere, 1:antalldeltakere, 1:length(rom)], Bin)
 for i in 1:antalldeltakere
@@ -45,6 +48,25 @@ for i in 1:antalldeltakere
     end
 end
 
+# aoø[i]: Antall Oppfylte Ønsker for deltaker nr. i.
+@variable(m, aoø[1:antalldeltakere], Int)
+for i in 1:antalldeltakere
+    @info "Punkt 1"
+    filter = zeros(Int, antalldeltakere)
+    @info "Punkt 2"
+    for j in 1:antalldeltakere
+        @info "Punkt 3"
+        if ønsker[i,j] == 1
+            @info "Punkt 4"
+            filter[j] = 1
+        end
+    end
+    @constraint(m, aoø[i] == sum([sum(bsr[i, j, :]) for j in filter]))
+    # @constraint(m, aoø[i] == sum([sum(bsr[i, j, :]) for j in 1:antalldeltakere if ønsker[i,j] == 1])) # Fungerer ikke!
+end
+
+
+# MÅLFUNKSJON
 # Dummymålfunksjon: Plassere flest mulig personer på rom
 @objective(m, Max, sum([sum(bsr[i, j, :]) for i in 1:antalldeltakere, j in 1:antalldeltakere if ønsker[i,j] == 1]))
 
@@ -56,3 +78,4 @@ println(status)
 
 println("Målverdi: ", getobjectivevalue(m))
 bori = getvalue(bori)
+display(bori)

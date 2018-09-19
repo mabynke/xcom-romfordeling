@@ -26,7 +26,7 @@ uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 version = "0.4.1"
 
 [[Cbc]]
-deps = ["BinDeps", "Compat", "Homebrew", "MathOptInterface", "MathProgBase", "WinRPM"]
+deps = ["BinDeps", "Compat", "Homebrew", "Libdl", "MathOptInterface", "MathProgBase", "WinRPM"]
 git-tree-sha1 = "abe562e69462f76982fca3c99033c0ca1a237c24"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaOpt/Cbc.jl.git"

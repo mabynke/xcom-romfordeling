@@ -52,16 +52,17 @@ end
 @variable(m, aoø[1:antalldeltakere], Int)
 for i in 1:antalldeltakere
     @info "Punkt 1"
-    filter = zeros(Int, antalldeltakere)
+    filter = []
     @info "Punkt 2"
     for j in 1:antalldeltakere
         @info "Punkt 3"
         if ønsker[i,j] == 1
             @info "Punkt 4"
-            filter[j] = 1
+            push!(filter, j)
         end
     end
-    @constraint(m, aoø[i] == sum([sum(bsr[i, j, :]) for j in filter]))
+    @info "Punkt 5" filter
+    @constraint(m, aoø[i] == sum([sum(bsr[i, k, :]) for k in filter]))
     # @constraint(m, aoø[i] == sum([sum(bsr[i, j, :]) for j in 1:antalldeltakere if ønsker[i,j] == 1])) # Fungerer ikke!
 end
 

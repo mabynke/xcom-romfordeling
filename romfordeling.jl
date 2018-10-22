@@ -4,18 +4,26 @@ using Pkg
 Pkg.activate(".")
 
 # Tips: Bruk JuMP#release-0.18.
+@info "Importerer JuMP."
 using JuMP
 # Tips: Bruk Cbc#master.
-using Cbc
+# using Cbc
+@info "Importerer Gurobi."
 using Gurobi
 
+@info "Importerer Statistics og Random"
 using Statistics
 using Random: randsubseq
 
 println("\n\n")
 
-antalldeltakere = 32
-rom = fill(3, cld(antalldeltakere, 3))
+antalldeltakere = 16*2 + 2*3
+
+# Mindre rom ser ut til å gi lengre kjøretid.
+# tmpromstørrelse = 6
+
+# rom = fill(tmpromstørrelse, cld(antalldeltakere, tmpromstørrelse))
+rom = vcat(fill(2, 16), fill(3, 2))
 ønsker = fill(zero(Int), (antalldeltakere, antalldeltakere))
 # kjønn[i] == k ⟺ deltaker nummer i er av kjønn k
 kjønn = rand([:gutt, :jente], antalldeltakere)
@@ -29,10 +37,11 @@ roønske = rand(0:2)
 @info "Lager dummyønsker."
 # Fylle ønskematrisen
 for i in 1:1:antalldeltakere
-    for j in randsubseq(1:antalldeltakere, 2//antalldeltakere)
+    for j in randsubseq(1:antalldeltakere, 1//antalldeltakere)
     # for j in i+1:i+2
         i == j && continue
         ønsker[i, j] = 1
+        ønsker[j, i] = 1
         # ønsker[j, i] = 1
     end
 end
@@ -41,7 +50,7 @@ end
 @info "Oppretter modellen."
 # Oversikt over nyttige valg: https://github.com/JuliaOpt/Cbc.jl
 # m = Model(solver = CbcSolver(logLevel=1, ratioGap=0.99, seconds=200))
-m = Model(solver = GurobiSolver())
+m = Model(solver = GurobiSolver(MIPGap=.1))
 
 # HOVEDVARIABLER
 @info "Definerer variabler."
@@ -108,12 +117,17 @@ bori = getvalue(bori)
 println()
 println("Ønsker:")
 display(ønsker)
-print()
-println("Romplassering. Rader: deltakere. Kolonner: rom.")
-display(bori)
 println()
+# println("Romplassering. Rader: deltakere. Kolonner: rom.")
+# display(bori)
+# println()
+
+deltakerepårom = [[i for i in 1:antalldeltakere if bori[i, rom] == 1] for rom in 1:length(rom)]
+@info "Romplassering (hver liste er et rom, tallene er deltakere):" deltakerepårom
+
 println("Antall ønsker oppfylt for hver deltaker:")
 aoø = getvalue(aoø)
 display(aoø)
+println()
 
 @info "Gjennomsnittlig antall ønsker oppfylt for hver deltaker:" mean(aoø)

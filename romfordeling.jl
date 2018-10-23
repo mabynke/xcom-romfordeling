@@ -121,7 +121,8 @@ end
 # println(m)
 
 @info "Begynner å løse!" antalldeltakere
-writeMPS(m, "modell_" * string(now()) * "_antdelt " * string(antalldeltakere) * ".mps")
+mkdir("modeller")
+writeMPS(m, "modeller/modell_" * string(now()) * "_antdelt " * string(antalldeltakere) * ".mps")
 @time status = solve(m)
 # tidsbruk = getsolvetime(m)
 

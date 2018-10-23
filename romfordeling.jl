@@ -35,7 +35,7 @@ LAGREMODELL = false
 # rom = fill(tmpromstørrelse, cld(antalldeltakere, tmpromstørrelse))
 kyotorom = vcat(fill(6, 6), fill(5, 5), fill(4, 11), fill(2, 4), fill(1, 1))
 
-rom = [i÷2 for i in 2:11]
+rom = [i for i in 1:6 for j in 1:3]
 # antalldeltakere = sum(rom)
 antalldeltakere = sum(rom)
 
@@ -66,8 +66,8 @@ end
 # Oversikt over nyttige valg: https://github.com/JuliaOpt/Cbc.jl
 # m = Model(solver = CbcSolver(logLevel=1, ratioGap=0.99, seconds=200))
 # Oversikt over valg: http://www.gurobi.com/documentation/8.1/refman/parameters.html#sec:Parameters
-# Automatisk innstilling «tuning» anbefaler Heuristics=0, Presolve=2
-m = Model(solver = GurobiSolver(Heuristics=0, Presolve=2, MIPGap=.16))
+# Automatisk innstilling «tuning» anbefaler Heuristics=0, MIPFocus=1, GomoryPasses=5, Presolve=2
+m = Model(solver = GurobiSolver(Heuristics=0, MIPFocus=1, GomoryPasses=5, Presolve=2, MIPGap=.16))
 
 # HOVEDVARIABLER
 @info "Definerer variabler."

@@ -27,6 +27,8 @@ using Dates: now
 
 println("\n\n")
 
+LAGREMODELL = false
+
 # Mindre rom ser ut til å gi lengre kjøretid.
 # tmpromstørrelse = 6
 
@@ -64,7 +66,8 @@ end
 # Oversikt over nyttige valg: https://github.com/JuliaOpt/Cbc.jl
 # m = Model(solver = CbcSolver(logLevel=1, ratioGap=0.99, seconds=200))
 # Oversikt over valg: http://www.gurobi.com/documentation/8.1/refman/parameters.html#sec:Parameters
-m = Model(solver = GurobiSolver(MIPGap=.16))
+# Automatisk innstilling «tuning» anbefaler Heuristics=0, Presolve=2
+m = Model(solver = GurobiSolver(Heuristics=0, Presolve=2, MIPGap=.16))
 
 # HOVEDVARIABLER
 @info "Definerer variabler."
@@ -121,8 +124,10 @@ end
 # println(m)
 
 @info "Begynner å løse!" antalldeltakere
-mkdir("modeller")
-writeMPS(m, "modeller/modell_" * string(now()) * "_antdelt " * string(antalldeltakere) * ".mps")
+if LAGREMODELL
+	mkdir("modeller")
+	writeMPS(m, "modeller/modell_" * string(now()) * "_antdelt " * string(antalldeltakere) * ".mps")
+end
 @time status = solve(m)
 # tidsbruk = getsolvetime(m)
 

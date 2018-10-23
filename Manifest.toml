@@ -13,25 +13,11 @@ git-tree-sha1 = "9930c1a6cd49d9fcd7218df6be417e6ae4f1468a"
 uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
 version = "0.5.2"
 
-[[BufferedStreams]]
-deps = ["Compat", "Pkg", "Test"]
-git-tree-sha1 = "5d55b9486590fdda5905c275bb21ce1f0754020f"
-uuid = "e1450e63-4bb3-523b-b2a4-4ffa8c0fd77d"
-version = "1.0.0"
-
 [[Calculus]]
 deps = ["Compat"]
 git-tree-sha1 = "f60954495a7afcee4136f78d1d60350abd37a409"
 uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 version = "0.4.1"
-
-[[Cbc]]
-deps = ["BinDeps", "Compat", "Homebrew", "Libdl", "MathOptInterface", "MathProgBase", "WinRPM"]
-git-tree-sha1 = "abe562e69462f76982fca3c99033c0ca1a237c24"
-repo-rev = "master"
-repo-url = "https://github.com/JuliaOpt/Cbc.jl.git"
-uuid = "9961bab8-2fa3-5c5a-9d89-47fab24efd76"
-version = "0.4.2+"
 
 [[CommonSubexpressions]]
 deps = ["Test"]
@@ -87,27 +73,9 @@ git-tree-sha1 = "24d5d140801079c1b0795215a79a000dd5864ec0"
 uuid = "2e9cd046-0924-5485-92f1-d5272153d98b"
 version = "0.5.3"
 
-[[HTTPClient]]
-deps = ["Compat", "LibCURL"]
-git-tree-sha1 = "161d5776ae8e585ac0b8c20fb81f17ab755b3671"
-uuid = "0862f596-cf2d-50af-8ef4-f2be67dfa83f"
-version = "0.2.1"
-
-[[Homebrew]]
-deps = ["BinDeps", "InteractiveUtils", "JSON", "Libdl", "Test", "Unicode"]
-git-tree-sha1 = "5582ec74f735cf8d12e562a2e65c47f34063bd51"
-uuid = "d9be37ee-ecc9-5288-90f1-b9ca67657a75"
-version = "0.7.0"
-
 [[InteractiveUtils]]
 deps = ["LinearAlgebra", "Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
-
-[[JSON]]
-deps = ["Dates", "Distributed", "Mmap", "Pkg", "Sockets", "Test", "Unicode"]
-git-tree-sha1 = "fec8e4d433072731466d37ed0061b3ba7f70eeb9"
-uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.19.0"
 
 [[JuMP]]
 deps = ["Calculus", "Compat", "ForwardDiff", "MathProgBase", "ReverseDiffSparse"]
@@ -117,29 +85,11 @@ repo-url = "https://github.com/JuliaOpt/JuMP.jl.git"
 uuid = "4076af6c-e467-56ae-b986-b466b2749572"
 version = "0.18.4+"
 
-[[LibCURL]]
-deps = ["BinaryProvider", "Compat", "Libdl", "Pkg", "Printf"]
-git-tree-sha1 = "6339c87cb76923a3cf947fcd213cbc364355c9c9"
-uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
-version = "0.4.1"
-
-[[LibExpat]]
-deps = ["Compat", "Pkg"]
-git-tree-sha1 = "fde352ec13479e2f90e57939da2440fb78c5e388"
-uuid = "522f3ed2-3f36-55e3-b6df-e94fee9b0c07"
-version = "0.5.0"
-
 [[LibGit2]]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 
 [[Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
-
-[[Libz]]
-deps = ["BufferedStreams", "Random", "Test"]
-git-tree-sha1 = "d405194ffc0293c3519d4f7251ce51baac9cc871"
-uuid = "2ec943e9-cfe8-584d-b93d-64dcb6d567b7"
-version = "1.0.0"
 
 [[LinQuadOptInterface]]
 deps = ["Compat", "MathOptInterface", "Pkg"]
@@ -231,10 +181,10 @@ uuid = "276daf66-3868-5448-9aa4-cd146d93841b"
 version = "0.7.1"
 
 [[StaticArrays]]
-deps = ["InteractiveUtils", "LinearAlgebra", "Random", "Statistics", "Test"]
-git-tree-sha1 = "d432c79bef174a830304f8601427a4357dfdbfb7"
+deps = ["InteractiveUtils", "LinearAlgebra", "Pkg", "Random", "Statistics", "Test"]
+git-tree-sha1 = "c268a7d13e0af233f44911c4a3e92b532e85b724"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "0.8.3"
+version = "0.9.0"
 
 [[Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
@@ -256,9 +206,3 @@ uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [[Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
-
-[[WinRPM]]
-deps = ["BinDeps", "Compat", "HTTPClient", "LibExpat", "Libdl", "Libz", "URIParser"]
-git-tree-sha1 = "2a889d320f3b77d17c037f295859fe570133cfbf"
-uuid = "c17dfb99-b4f7-5aad-8812-456da1ad7187"
-version = "0.4.2"

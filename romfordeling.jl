@@ -2,6 +2,7 @@
 
 using Pkg
 Pkg.activate(".")
+Pkg.instantiate()
 
 # Tips: Bruk JuMP#release-0.18.
 @info "Importerer JuMP."
@@ -9,21 +10,33 @@ using JuMP
 # Tips: Bruk Cbc#master.
 # using Cbc
 @info "Importerer Gurobi."
-using Gurobi
+try
+	using Gurobi
+catch e
+	println("Det kan se ut til at Gurobi ikke har blitt bygd skikkelig. Prøver å bygge. Dersom vi er «Unable to locate Gurobi installation», pass på at Gurobi er skikkelig installert, og at miljøvariabler er satt slik at vi kan finne Gurobi. Se Gurobis «Quick start guide».")
+	if e isa ErrorException
+		Pkg.build("Gurobi")
+		using Gurobi
+	end
+end
 
-@info "Importerer Statistics og Random"
+@info "Importerer innebygde biblioteker"
 using Statistics
 using Random: randsubseq
+using Dates: now
 
 println("\n\n")
-
-antalldeltakere = 16*2 + 2*3
 
 # Mindre rom ser ut til å gi lengre kjøretid.
 # tmpromstørrelse = 6
 
 # rom = fill(tmpromstørrelse, cld(antalldeltakere, tmpromstørrelse))
-rom = vcat(fill(2, 16), fill(3, 2))
+kyotorom = vcat(fill(6, 6), fill(5, 5), fill(4, 11), fill(2, 4), fill(1, 1))
+
+rom = [i÷2 for i in 2:11]
+# antalldeltakere = sum(rom)
+antalldeltakere = sum(rom)
+
 ønsker = fill(zero(Int), (antalldeltakere, antalldeltakere))
 # kjønn[i] == k ⟺ deltaker nummer i er av kjønn k
 kjønn = rand([:gutt, :jente], antalldeltakere)
@@ -50,7 +63,8 @@ end
 @info "Oppretter modellen."
 # Oversikt over nyttige valg: https://github.com/JuliaOpt/Cbc.jl
 # m = Model(solver = CbcSolver(logLevel=1, ratioGap=0.99, seconds=200))
-m = Model(solver = GurobiSolver(MIPGap=.1))
+# Oversikt over valg: http://www.gurobi.com/documentation/8.1/refman/parameters.html#sec:Parameters
+m = Model(solver = GurobiSolver(MIPGap=.16))
 
 # HOVEDVARIABLER
 @info "Definerer variabler."
@@ -107,6 +121,7 @@ end
 # println(m)
 
 @info "Begynner å løse!" antalldeltakere
+writeMPS(m, "modell_" * string(now()) * "_antdelt " * string(antalldeltakere) * ".mps")
 @time status = solve(m)
 # tidsbruk = getsolvetime(m)
 
@@ -123,7 +138,9 @@ println()
 # println()
 
 deltakerepårom = [[i for i in 1:antalldeltakere if bori[i, rom] == 1] for rom in 1:length(rom)]
-@info "Romplassering (hver liste er et rom, tallene er deltakere):" deltakerepårom
+println("Romplassering (hver liste er et rom, tallene er deltakere):")
+display(deltakerepårom)
+println()
 
 println("Antall ønsker oppfylt for hver deltaker:")
 aoø = getvalue(aoø)

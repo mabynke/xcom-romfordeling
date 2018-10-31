@@ -16,25 +16,19 @@ if args.rom:
     romstorrelser = [int(rom) for rom in args.rom.strip().split(",")]
     print(romstorrelser)
 else:
-    #TODO: Lese romstørrelser fra streng
     with open(args.romfil) as f:
         romstorrelser = [int(rom) for rom in f.readlines()]
 
 # Leser ønskene. NB! Ønskene er 1-indekser, men behandles som 0-indeksert internt
 if args.onsker:
     # Eks. `2,3;1,3;1,2` betyr at person 1 ønsker 2 og 3, person 2 ønsker 1, 3 og person 3 ønker 1, 2
-    onskeliste = [person for person in args.onsker.strip().split(";")]
-    for (personnummer, onsker) in enumerate(onskeliste):
-        if onsker:
-            onskeliste[personnummer] = [int(personnummer)-1  for personnummer in onsker.split(",")]
-        else:
-            onskeliste[personnummer] = []
-    for (personnummer, onsker) in enumerate(onskeliste):
-        print("%d: %s" % (personnummer, " ".join([str(i) for i in onsker])))
-
+    onskeliste = [[int(p) for p in person.split(',')] if person else [] for person in args.onsker.strip().split(";")]
 else:
     with open(args.onskerfil) as f:
         onskeliste = [[int(i)-1 for i in line.split()] for line in f.readlines()]
+
+for (personnummer, onsker) in enumerate(onskeliste):
+    print("%d: %s" % (personnummer, " ".join([str(i) for i in onsker])))
 
 
 ANTALL_ROMFORDELINGER = 36

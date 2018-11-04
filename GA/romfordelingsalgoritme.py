@@ -1,5 +1,5 @@
 import argparse
-from random import shuffle, randint, sample
+from random import shuffle, randint, random, sample
 from copy import deepcopy
 from multiprocessing import Pool
 
@@ -8,6 +8,7 @@ parser.add_argument("-r", "--rom", help="Kommaseparert liste med størrelse på 
 parser.add_argument("-rf", "--romfil", help="Filsti til fil med størrelse på rommene")
 parser.add_argument("-o", "--onsker", help="Kommaseparert liste med ønsker til hver person")
 parser.add_argument("-of", "--onskerfil", help="Filsti til fil med ønsker til hver person")
+parser.add_argument("-v", "--verbose", nargs="?", default="10", help="0: Skriv kun én oppsummerende linje. 10: Skriv alt (standard).")
 args = parser.parse_args()
 
 
@@ -28,10 +29,11 @@ else:
         onskeliste = [[int(i)-1 for i in line.split()] for line in f.readlines()]
 
 for (personnummer, onsker) in enumerate(onskeliste):
-    print("%d: %s" % (personnummer, " ".join([str(i) for i in onsker])))
+    if args.verbose == "10":
+        print("%d: %s" % (personnummer, " ".join([str(i) for i in onsker])))
 
 
-ANTALL_ROMFORDELINGER = 36
+ANTALL_ROMFORDELINGER = 16
 HALVPARTEN_AV_ROMFORDELINGER = ANTALL_ROMFORDELINGER // 2
 ANTALL_PERSONER = len(onskeliste)
 
@@ -98,16 +100,26 @@ def evaluer_antall_onsker_for_rom(romfordeling, romindeks, verbose):
         malverdi += onsker_for_person_i # Her kan vi ha en mer sofisikert målfunksjon
     return malverdi
 
+def _muter_par(romfordeling):
+    rom = sample(ROMPOPULASJON, 2)
+    i = randint(romintervaller[rom[0]][0], romintervaller[rom[0]][1])
+    j = randint(romintervaller[rom[1]][0], romintervaller[rom[1]][1])
+    romfordeling[i], romfordeling[j] = romfordeling[j], romfordeling[i]
 
 def muter_romfordeling(romfordeling, antall_muteringer):
     for _ in range(antall_muteringer):
-        rom = sample(ROMPOPULASJON, 2)
-        i = randint(romintervaller[rom[0]][0], romintervaller[rom[0]][1])
-        j = randint(romintervaller[rom[1]][0], romintervaller[rom[1]][1])
-        romfordeling[i], romfordeling[j] = romfordeling[j], romfordeling[i]
+        _muter_par(romfordeling)
+
+def muter_romfordeling_exp(romfordeling, p):
+    # p er sannsynligheten for å gjøre enda en mutering.
+    assert(0 <= p < 1)
+    while True:
+        _muter_par(romfordeling)
+        if p < random():
+            break
 
 
-def main():
+def kjoring(P):
     # Begynner med `ANTALL_ROMFORDELINGER` tilfeldigfordelte romfordelinger
     romfordelinger = []
     for i in range(ANTALL_ROMFORDELINGER):
@@ -141,19 +153,23 @@ def main():
                 break
         for i in range(HALVPARTEN_AV_ROMFORDELINGER):
             romfordelinger[i+HALVPARTEN_AV_ROMFORDELINGER] = deepcopy(romfordelinger[i])
-            muter_romfordeling(romfordelinger[i + HALVPARTEN_AV_ROMFORDELINGER][1], 1)
+            muter_romfordeling_exp(romfordelinger[i + HALVPARTEN_AV_ROMFORDELINGER][1], P)
+            #muter_romfordeling(romfordelinger[i + HALVPARTEN_AV_ROMFORDELINGER][1], 1)
 
         # Skrive ut fremgang
-        if _ % 100 == 0:
-            print(_, end=": ")
-            for i in romfordelinger[:HALVPARTEN_AV_ROMFORDELINGER]:
-                print(int(i[0]), end=",")
-            print()
+        if args.verbose == "10":
+            if _ % 100 == 0:
+                print(_, end=": ")
+                for i in romfordelinger[:HALVPARTEN_AV_ROMFORDELINGER]:
+                    print(int(i[0]), end=",")
+                print()
 
-    print('Evaluerer beste romfordeling')
-    evaluer_romfordeling(romfordelinger[0], verbose=True)
+    if args.verbose == "10":
+        print('Evaluerer beste romfordeling')
+    evaluer_romfordeling(romfordelinger[0], verbose=args.verbose == "10")
 
-    print("====================Romfordeling====================")
+    if args.verbose == "10":
+        print("====================Romfordeling====================")
 
     beste_romfordeling = romfordelinger[0][1]
     startindeks = 0
@@ -161,11 +177,27 @@ def main():
         rom_i = []
         for i in range(startindeks, startindeks+rom):
             rom_i.append(beste_romfordeling[i])
-            print((beste_romfordeling[i]), end=" ")
+            if args.verbose == "10":
+                print((beste_romfordeling[i]), end=" ")
         startindeks += rom
-        print()
+        if args.verbose == "10":
+            print()
 
-    print("Verdi: %d" % romfordelinger[0][0])
-    print("Antall ønsker: " + str(sum([len(i) for i in onskeliste])))
+    antall_onsker = sum([len(i) for i in onskeliste])
+    if args.verbose == "10":
+        print("Verdi: %d" % romfordelinger[0][0])
+        print("Antall ønsker: " + str(antall_onsker))
+    else:
+        print("{1}\t{0}".format(romfordelinger[0][0], P))
+        
+def main():
+    if True:
+        kjoring(0)
+    else:
+        for _ in range(10000):
+            P = random()
+            if P == 1:
+                continue
+            kjoring(random())
 
 main()

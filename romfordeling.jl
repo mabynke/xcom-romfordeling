@@ -29,26 +29,6 @@ println("\n\n")
 
 LAGREMODELL = false
 
-function naivløsning(antalldeltakere, rom)
-	bori = zeros(antalldeltakere, length(rom))
-
-	deltakernr = 1
-	for romnr in 1:length(rom)
-		for i in 1:rom[romnr]
-			bori[deltakernr, romnr] = 1
-			deltakernr += 1
-			if deltakernr > antalldeltakere
-				break
-			end
-		end
-		if deltakernr > antalldeltakere
-			break
-		end
-	end
-
-	return bori
-end
-
 function kjør()
 	@info "Starter kjør()."
 	# Mindre rom ser ut til å gi lengre kjøretid.
@@ -63,7 +43,7 @@ function kjør()
 	# kyotoantalldeltakere = 107
 
 	# rom = [i for i in 2:4 for j in 1:1]
-	rom = tokyobilligrom
+	rom = [i for i in 1:14]
 	# antalldeltakere = kyotoantalldeltakere
 	antalldeltakere = sum(rom)
 
@@ -79,8 +59,8 @@ function kjør()
 
 	@info "Lager dummyønsker."
 	# Fylle ønskematrisen
-	ønsker = dummyønsker(antalldeltakere)
-	# ønsker = tolkønskestreng("17;5;47,52,58,96;33,59;2;;;10;84;8,52;71,91;47,51,67;74;36,77,107;;44,65,76;1,77,93,105;19,25,44,88;18,25,107;47,66,79,84,89;72;25,103;33,57,82,85;;18,19,22;42,82;49,99,107;68,85;;55,68,72,102;101;41;4,23,34;33,57,58;80;14;;49;72,97;56,59,71,100;32;26;48,53,54,87;16,18,104;;52,66,71;3,12,20,65;43,64;27,38,93,96;;12;3,10,46,76;43;43,94;30,84;40;23,34;3,34;4,40,79,96;;;81;;48;16,47;20,46;12;28,30,96;;;11,40,46;21,30,39;91;13;85;16,52,89;14,17;;20,59,91,102;35;62;23,26;99;9,20,55;23,28,75,87,98;;43,85;18;20,76;;11,73,79,94;;17,49,104;54,91;;3,49,59,68;39;85;27,83;40;31;30,79;22;44,93;17;;14,19,27")
+	# ønsker = dummyønsker(antalldeltakere)
+	ønsker = tolkønskestreng(read("GA/input/04-onsker.txt", String))
 
 	# MODELLEN
 	@info "Oppretter modellen."
@@ -98,7 +78,7 @@ function kjør()
 
 	# bori[d, r]: Deltaker d bor på rom r. (RomFordeling)
 
-	startbori = naivløsning(antalldeltakere, rom)
+	# startbori = naivløsning(antalldeltakere, rom)
 
 # 	startbori = tolkbolistestreng(
 # "101 95 78 67 58 29
@@ -125,7 +105,8 @@ function kjør()
 # 80 61
 # 49 28
 # 44 14")
-	@variable(m, bori[d=1:antalldeltakere, r=1:length(rom)], Bin, start=startbori[d, r])
+	# @variable(m, bori[d=1:antalldeltakere, r=1:length(rom)], Bin, start=startbori[d, r])
+	@variable(m, bori[d=1:antalldeltakere, r=1:length(rom)], Bin)
 
 	# HJELPEVARIABLER
 	# bsr[i, j, r]: Deltaker i og deltaker j Bor Sammen på Rom r.
@@ -198,12 +179,32 @@ function kjør()
 
 end
 
+function naivløsning(antalldeltakere, rom)
+	bori = zeros(antalldeltakere, length(rom))
+
+	deltakernr = 1
+	for romnr in 1:length(rom)
+		for i in 1:rom[romnr]
+			bori[deltakernr, romnr] = 1
+			deltakernr += 1
+			if deltakernr > antalldeltakere
+				break
+			end
+		end
+		if deltakernr > antalldeltakere
+			break
+		end
+	end
+
+	return bori
+end
+
 function skrivønskestreng(ønsker, antalldeltakere)
 	ønskelisterstreng = join([join([j for j in 1:antalldeltakere if ønsker[i, j] == 1], ",") for i in 1:antalldeltakere], ";")
 	println(ønskelisterstreng)
 end
 
-function tolkønskestreng(ønskelistestreng, skille1=",", skille2=";")
+function tolkønskestreng(ønskelistestreng, skille1=" ", skille2="\n")
 	ønskelister = strengtillisteliste(ønskelistestreng, skille1, skille2)
 	antalldeltakere = length(ønskelister)
 	ønsker = zeros(Int, antalldeltakere, antalldeltakere)

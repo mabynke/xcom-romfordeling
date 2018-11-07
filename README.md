@@ -24,22 +24,22 @@ Målet er at flest mulig ønsker blir oppfylt.
 Vi definerer målfunksjonen M (verdien som skal maksimeres) slik:
 
 ```
-M = Summen av f[d1, d2] for alle deltakere d1 og alle deltakere d2 som bor på samme rom som d1
+M = Summen av f(d1, d2) for alle deltakere d1 og alle deltakere d2 som bor på samme rom som d1
 
-f[d1, d2] = a[d1, d2] + b[d1, d2] + c[d1, d2]
+f(d1, d2) = a(d1, d2) + b(d1, d2) + c(d1, d2)
 
-a[d1, d2] =
+a(d1, d2) =
     1 dersom d1 hadde d2 på listen over ønsker
     0 ellers    
 
-b[d1, d2] =
+b(d1, d2) =
    -1 dersom d1 sitt ønske om kjønn er 1
       og d1 og d2 er av ulikt kjønn
  -100 dersom d1 sitt ønske om kjønn er 2
       og d1 og d2 er av ulikt kjønn
     0 ellers
 
-c[d1, d2] =
+c(d1, d2) =
     1 dersom d1 og d2 har samme ønske om ro
       og dette ønsket er 1 eller -1
    -1 dersom d1 og d2 har motsatte ønsker om ro (-1 og 1 eller 1 og -1)

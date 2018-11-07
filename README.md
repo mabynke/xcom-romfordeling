@@ -1,16 +1,20 @@
 # xcom-romfordeling
-Skript for optimal fordeling av ekskursjonsdeltakere på rom
+Verktøy for optimal fordeling av ekskursjonsdeltakere på rom.
+Spesielt lagd for datateknologi på NTNU sin ekskursjon våren 2019.
 
-Bruker JuMP.jl og Cbc.jl, som ikke er kompatible med Julia 1.0 enda. Jeg har brukt *Julia 0.7* og spesifikke utgaver av disse pakkene som fungerer. Dette er satt opp som et Julia-miljø.
+## MIP
+Et heltallsprogram (integer program) ligger i mappen `MIP`.
 
-# Sette opp Julia-miljøet
-Gå inn i rotmappen i terminal og start Julia 0.7. Skriv `]` for å gå inn i Pkg3-modus. Skriv dette:
+Denne bruker JuMP.jl og Gurobi og Gurobi.jl.
+Gurobi må du selv installere, det kan lastes ned fra deres egen nettside.
+Følg dokumentasjonen der for hvordan det settes opp.
+Man kan få en gratis akademisk lisens.
 
+Det følger med et Julia-miljø i mappen `MIP` (`Project.toml` og `Manifest.toml`) slik at de riktige pakkene blir installert.
+`mip-fordeling.jl` tar seg av å aktivere dette miljøet og installere pakkene.
+
+### For å kjøre:
+```bash
+cd MIP
+julia mip-fordeling.jl
 ```
-activate .
-instantiate
-```
-
-Den første kommandoen aktiverer miljøet, og den andre laster ned og installerer avhengighetene (JuMP og Cbc). Det kan ta lang tid å installere Cbc fordi den skal bygge et stort program fra kildekode.
-
-Når du senere skal kjøre koden, pass på å ha aktivert xcom-rom-miljøet først (f.eks. i REPL i Juno).

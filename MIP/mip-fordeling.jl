@@ -43,7 +43,7 @@ function kjør()
 	# kyotoantalldeltakere = 107
 
 	# rom = [i for i in 2:4 for j in 1:1]
-	rom = [i for i in 1:14]
+	rom = tokyobilligrom
 	# antalldeltakere = kyotoantalldeltakere
 	antalldeltakere = sum(rom)
 
@@ -59,8 +59,8 @@ function kjør()
 
 	@info "Lager dummyønsker."
 	# Fylle ønskematrisen
-	# ønsker = dummyønsker(antalldeltakere)
-	ønsker = tolkønskestreng(read("GA/input/04-onsker.txt", String))
+	ønsker = dummyønsker(antalldeltakere)
+	# ønsker = tolkønskestreng(read("GA/input/04-onsker.txt", String))
 
 	# MODELLEN
 	@info "Oppretter modellen."
@@ -78,7 +78,7 @@ function kjør()
 
 	# bori[d, r]: Deltaker d bor på rom r. (RomFordeling)
 
-	# startbori = naivløsning(antalldeltakere, rom)
+	startbori = naivløsning(antalldeltakere, rom)
 
 # 	startbori = tolkbolistestreng(
 # "101 95 78 67 58 29
@@ -105,8 +105,8 @@ function kjør()
 # 80 61
 # 49 28
 # 44 14")
-	# @variable(m, bori[d=1:antalldeltakere, r=1:length(rom)], Bin, start=startbori[d, r])
-	@variable(m, bori[d=1:antalldeltakere, r=1:length(rom)], Bin)
+	@variable(m, bori[d=1:antalldeltakere, r=1:length(rom)], Bin, start=startbori[d, r])
+	# @variable(m, bori[d=1:antalldeltakere, r=1:length(rom)], Bin)
 
 	# HJELPEVARIABLER
 	# bsr[i, j, r]: Deltaker i og deltaker j Bor Sammen på Rom r.

@@ -3,23 +3,10 @@ using JSON
 # Bruk: argument 1: filen som skal tolkes.
 
 const D = JSON.parse(read(ARGS[1], String)) # Dict{String,Any}
-# const IDTILINDEKS = lagidtilindeks(D)
-
-# "Lager en Dict med en mapping fra deltaker-ID til indeks"
-# function lagidtilindeks(deltakere)
-#     idtilindeks = Dict{String,Int}
-#     i = 1
-#     for deltakerid in keys(deltakere)
-#         idtilindeks[deltakerid] = i
-#         i += 1
-#     end
-#
-#     return idtilindeks
-# end
 
 "Regner ut verdien beskrevet i README.md. d1 og d2 er deltaker-ID-er."
 function f(d1, d2)
-    @info "Regner ut f" d1 d2 a(d1, d2) b(d1, d2) c(d1, d2)
+    # @info "Regner ut f" d1 d2 a(d1, d2) b(d1, d2) c(d1, d2)
 
     if d1 == d2
         return 0
@@ -73,6 +60,7 @@ function main()
     verdimatrise = lagverdimatrise() # Resultatet av kjøringen. Skal tilsvare f i README.md.
 
     display(verdimatrise)
+    println()
 
     utfilnavnstart = endswith(lowercase(ARGS[1]), ".json") ? ARGS[1][1:end-5] : ARGS[1]
     utfilnavn = utfilnavnstart * "_ønskematrise.json"

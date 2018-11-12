@@ -1,0 +1,20 @@
+{
+    "1": {
+        "kjønn": 1,
+        "ønskeliste": [2, 3],
+        "kjønnønske": 1,
+        "roønske": -1
+    },
+    "2": {
+        "kjønn": 0,
+        "ønskeliste": [1],
+        "kjønnønske": 0,
+        "roønske": 0
+    },
+    "3": {
+        "kjønn": 0,
+        "ønskeliste": [2],
+        "kjønnønske": 2,
+        "roønske": 1
+    }
+}

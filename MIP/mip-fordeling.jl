@@ -4,11 +4,10 @@ using Pkg
 Pkg.activate(".")
 Pkg.instantiate()
 
-# Tips: Bruk JuMP#release-0.18.
 @info "Importerer JuMP."
 using JuMP
-# Tips: Bruk Cbc#master.
-# using Cbc
+@info "Importerer JSON"
+using JSON
 @info "Importerer Gurobi."
 try
 	using Gurobi
@@ -42,8 +41,8 @@ function kjør()
 	seoulrom_alt2 = vcat(fill(3, 2), fill(2, 20))
 	# kyotoantalldeltakere = 107
 
-	# rom = [i for i in 2:4 for j in 1:1]
-	rom = tokyobilligrom
+	rom = [i for i in 1:2 for j in 1:1]
+	# rom = kyotorom
 	# antalldeltakere = kyotoantalldeltakere
 	antalldeltakere = sum(rom)
 
@@ -57,10 +56,12 @@ function kjør()
 	# roønske[i] == ikke bestemt enda
 	roønske = rand(0:2)
 
-	@info "Lager dummyønsker."
+	# @info "Lager dummyønsker."
 	# Fylle ønskematrisen
-	ønsker = dummyønsker(antalldeltakere)
+	# ønsker = dummyønsker(antalldeltakere)
 	# ønsker = tolkønskestreng(read("GA/input/04-onsker.txt", String))
+	ønsker = ønskerfrajson(ARGS[1])
+	@info "Hentet ønskematrise" ønsker
 
 	# MODELLEN
 	@info "Oppretter modellen."
@@ -80,31 +81,6 @@ function kjør()
 
 	startbori = naivløsning(antalldeltakere, rom)
 
-# 	startbori = tolkbolistestreng(
-# "101 95 78 67 58 29
-# 105 81 41 25 4 1
-# 57 56 33 32 22 3
-# 98 92 82 48 37 26
-# 99 94 79 55 39 34
-# 102 87 24 21 18 17
-# 100 91 30 9 7
-# 86 63 52 47 42
-# 88 75 65 51 45
-# 93 89 73 53 12
-# 66 50 46 11 2
-# 103 64 43 15
-# 85 77 40 31
-# 97 27 74 84
-# 60 23 68 62
-# 59 13 35 106
-# 76 104 16 0
-# 20 96 38 71
-# 54 8 83 19
-# 70 10 72 90
-# 6 69 36 5
-# 80 61
-# 49 28
-# 44 14")
 	@variable(m, bori[d=1:antalldeltakere, r=1:length(rom)], Bin, start=startbori[d, r])
 	# @variable(m, bori[d=1:antalldeltakere, r=1:length(rom)], Bin)
 
@@ -121,15 +97,15 @@ function kjør()
 	    end
 	end
 
-	# aoø[i]: Antall Oppfylte Ønsker for deltaker nr. i.
-	@variable(m, aoø[1:antalldeltakere], Int)
-	for i in 1:antalldeltakere
-	    # Lager en liste med en binær verdi (1 eller 0) for hvert av i sine ønsker.
-	    # Lagrer listen midlertidig før vi summerer og finner antall oppfylte ønsker
-	    # for å omgå at sum() ikke vil summere en tom liste (av typen Array{Any, 1}).
-	    tmp = [sum(bsr[i, j, :]) for j in 1:antalldeltakere if ønsker[i,j] == 1]
-	    @constraint(m, aoø[i] == sum(isempty(tmp) ? [0] : tmp))
-	end
+	# # aoø[i]: Antall Oppfylte Ønsker for deltaker nr. i.
+	# @variable(m, aoø[1:antalldeltakere], Int)
+	# for i in 1:antalldeltakere
+	#     # Lager en liste med en binær verdi (1 eller 0) for hvert av i sine ønsker.
+	#     # Lagrer listen midlertidig før vi summerer og finner antall oppfylte ønsker
+	#     # for å omgå at sum() ikke vil summere en tom liste (av typen Array{Any, 1}).
+	#     tmp = [sum(bsr[i, j, :]) for j in 1:antalldeltakere if ønsker[i,j] == 1]
+	#     @constraint(m, aoø[i] == sum(isempty(tmp) ? [0] : tmp))
+	# end
 
 
 	# KRAV
@@ -142,18 +118,12 @@ function kjør()
 	for romnummer in 1:length(rom)
 	    @constraint(m, sum(bori[:, romnummer]) <= rom[romnummer])
 	end
-	# Personer som det er viktig å bo med kun eget kjønn for, skal kun bo med eget kjønn.
-	for i in 1:antalldeltakere
-	    if kjønnønske[i] == 2
-	        # TODO
-	    end
-	end
 
 
 	# MÅLFUNKSJON
 	@info "Definerer målfunksjon."
 	# Maksimer antall oppfylte ønsker.
-	@objective(m, Max, sum(aoø))
+	@objective(m, Max, sum(ønsker[i, j] * sum(bsr[i, j, :]) for i in 1:antalldeltakere, j in 1:antalldeltakere))
 
 	# println(m)
 	skrivønskestreng(ønsker, antalldeltakere)
@@ -174,8 +144,8 @@ function kjør()
 
 	skrivproblem(antalldeltakere, ønsker)
 
-	aoø = getvalue(aoø)
-	skrivløsning(antalldeltakere, rom, bori, aoø)
+	# aoø = getvalue(aoø)
+	skrivløsning(antalldeltakere, rom, bori)
 
 end
 
@@ -255,6 +225,16 @@ function tolkbolistestreng(streng)
 	return bolistetilmatrise(boliste)
 end
 
+function ønskerfrajson(filsti)
+	antalldeltakere = 0
+	open(filsti, "r") do fil
+		jsonarray = JSON.parse(fil)
+		antalldeltakere = length(jsonarray)
+		# JSON har transponert matrisen og lagt den som en liste av lister.
+		return [jsonarray[j][i] for i in 1:antalldeltakere, j in 1:antalldeltakere]
+	end
+end
+
 function dummyønsker(antalldeltakere)
 	ønsker = fill(zero(Int), (antalldeltakere, antalldeltakere))
 
@@ -270,26 +250,28 @@ end
 
 function skrivproblem(antalldeltakere, ønsker)
 	println("Ønsker:")
-	ønskelister = [(i, [j for j in 1:antalldeltakere if ønsker[i, j] == 1]) for i in 1:antalldeltakere]
-	println("Ønskelister (hver liste er en deltakers ønsker, tallene er andre deltakere):")
-	display(ønskelister)
+	# ønskelister = [(i, [j for j in 1:antalldeltakere if ønsker[i, j] == 1]) for i in 1:antalldeltakere]
+	# println("Ønskelister (hver liste er en deltakers ønsker, tallene er andre deltakere):")
+	# display(ønskelister)
+	display(ønsker)
 	println()
 end
 
-function skrivløsning(antalldeltakere, rom, bori, aoø)
+function skrivløsning(antalldeltakere, rom, bori)
 	deltakerepårom = [[i for i in 1:antalldeltakere if bori[i, rom] == 1] for rom in 1:length(rom)]
 	println("Romplassering (hver liste er et rom, tallene er deltakere):")
 	display(deltakerepårom)
 	println()
 
-	println("Antall ønsker oppfylt for hver deltaker:")
-	display(aoø)
-	println()
-
-	@info "Gjennomsnittlig antall ønsker oppfylt for hver deltaker:" mean(aoø)
+	# println("Antall ønsker oppfylt for hver deltaker:")
+	# display(aoø)
+	# println()
+	#
+	# @info "Gjennomsnittlig antall ønsker oppfylt for hver deltaker:" mean(aoø)
 end
 
 function main()
+	@info "Startet main, kaller kjør"
 	kjør()
 end
 

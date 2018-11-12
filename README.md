@@ -29,22 +29,27 @@ M = Summen av f(d1, d2) for alle deltakere d1 og alle deltakere d2 som bor på s
 f(d1, d2) = a(d1, d2) + b(d1, d2) + c(d1, d2)
 
 a(d1, d2) =
-    1 dersom d1 hadde d2 på listen over ønsker
-    0 ellers    
+    1 dersom d1 hadde d2 på listen over ønsker.
+    0 ellers.
 
 b(d1, d2) =
-   -1 dersom d1 sitt ønske om kjønn er 1
+   -1.5 dersom d1 sitt ønske om kjønn er 1
       og d1 og d2 er av ulikt kjønn
+      og d1 ikke hadde d2 på listen over ønsker.
  -100 dersom d1 sitt ønske om kjønn er 2
       og d1 og d2 er av ulikt kjønn
-    0 ellers
+      og d1 ikke hadde d2 på listen over ønsker.
+    0 ellers.
 
 c(d1, d2) =
     1 dersom d1 og d2 har samme ønske om ro
-      og dette ønsket er 1 eller -1
-   -1 dersom d1 og d2 har motsatte ønsker om ro (-1 og 1 eller 1 og -1)
-    0 ellers
+      og dette ønsket er 1 eller -1.
+   -1 dersom d1 og d2 har motsatte ønsker om ro (-1 og 1 eller 1 og -1).
+    0 ellers.
 ```
+
+Merk at differansen mellom høyeste og laveste verdi av `c(d1, d2)` er 2. Dette reflekterer det vi ble enige om på et eget møte om denne vektingen.
+På dette møtet hadde vi enda ikke bestemt oss for å ha en «litt viktig» som svaralternativ på spørsmålet om kjønn, og derfor bestemte vi ikke noen verdi for dette. Miriam og Mathias foreslår -1.5 her for å kunne overstyre ett vanlig ønske, men ikke to.
 
 ## MIP
 Et heltallsprogram (integer program) ligger i mappen `MIP`.

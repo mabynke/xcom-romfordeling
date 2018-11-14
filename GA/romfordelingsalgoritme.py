@@ -1,4 +1,5 @@
 import argparse
+import json
 from random import shuffle, randint, random, sample
 from copy import deepcopy
 from multiprocessing import Pool
@@ -8,6 +9,7 @@ parser.add_argument("-r", "--rom", help="Kommaseparert liste med størrelse på 
 parser.add_argument("-rf", "--romfil", help="Filsti til fil med størrelse på rommene")
 parser.add_argument("-o", "--onsker", help="Kommaseparert liste med ønsker til hver person")
 parser.add_argument("-of", "--onskerfil", help="Filsti til fil med ønsker til hver person")
+parser.add_argument("-jof", "--jsononskerfil", help="Filsti til JSON-fil med ønsker til hver person")
 parser.add_argument("-v", "--verbose", nargs="?", default="10", help="0: Skriv kun én oppsummerende linje. 10: Skriv alt (standard).")
 args = parser.parse_args()
 
@@ -24,16 +26,28 @@ else:
 if args.onsker:
     # Eks. `2,3;1,3;1,2` betyr at person 1 ønsker 2 og 3, person 2 ønsker 1, 3 og person 3 ønker 1, 2
     onskeliste = [[int(p) for p in person.split(',')] if person else [] for person in args.onsker.strip().split(";")]
-else:
+elif args.onskerfil:
     with open(args.onskerfil) as f:
         onskeliste = [[int(i)-1 for i in line.split()] for line in f.readlines()]
+else:
+    with open(args.jsononskerfil) as f:
+        nabostreng = json.loads(f.read())["nabostreng"]
+        onskeliste = [[int(i)-1 for i in line.split()] for line in nabostreng.split("\n")]
+
+print("Laster restverdimatrisen (verdiene som gjelder ønsker om kjønn og ro) ...")
+with open(args.jsononskerfil) as f:
+    # Merk at denne matrisen er lagret «kolonne først»
+    verdijson = json.loads(f.read())
+    restverdimatrise = verdijson["restmatrise"]
+    idliste = verdijson["idliste"]
+
 
 for (personnummer, onsker) in enumerate(onskeliste):
     if args.verbose == "10":
         print("%d: %s" % (personnummer, " ".join([str(i) for i in onsker])))
 
 
-ANTALL_ROMFORDELINGER = 16
+ANTALL_ROMFORDELINGER = 256
 HALVPARTEN_AV_ROMFORDELINGER = ANTALL_ROMFORDELINGER // 2
 ANTALL_PERSONER = len(onskeliste)
 
@@ -76,29 +90,58 @@ def print_nabomatrise_fra_onskeliste():
 
 
 def evaluer_romfordeling(romfordeling, verbose=False):
+    # romfordeling er en liste [v, l] der v er verdien så langt og l er en liste med den faktiske plasseringen.
     malverdi = 0.0
     for rom in range(ANTALL_ROM):
         malverdi_for_rom = evaluer_antall_onsker_for_rom(romfordeling[1], rom, verbose=verbose)
         malverdi += malverdi_for_rom
         if verbose:
-            print("Rommet har målverdi %d" % malverdi_for_rom)
+            print("Rommet har målverdi %.1f" % malverdi_for_rom)
     return malverdi
 
 
 def evaluer_antall_onsker_for_rom(romfordeling, romindeks, verbose):
     malverdi = 0.0
+
+    # For hver person på rommet
     for i in range(romintervaller[romindeks][0], romintervaller[romindeks][1]+1):
-        onsker_for_person_i = 0
+        antall_romkamerater_pa_onskelisten = 0
+        verdi_for_person_i = 0
+
+        # For hver romkamerat
         for j in range(romintervaller[romindeks][0], romintervaller[romindeks][1]+1):
             if j == i:
                 continue
+
+            restverdi = restverdimatrise[romfordeling[j]][romfordeling[i]]   # Merk den uvante rekkefølgen på indeksene.
+
             # Sjekk om person i ønsker person j
             if romfordeling[j] in onskemengde[romfordeling[i]]:
-                onsker_for_person_i += 1
+                antall_romkamerater_pa_onskelisten += 1
+                if restverdi != 0:
+                    abcd = 1234
+                assert(restverdi == 0)
+
+            # Regne inn verdi fra ønsker om kjønn og ro.
+            # if verbose:
+            #     print("%d: Person %d har restverdi %.1f for person %d." % (romindeks, romfordeling[i], restverdimatrise[j][i], romfordeling[j]))
+            verdi_for_person_i += restverdi
+
+        verdi_for_person_i += antall_onsker_til_verdi(antall_romkamerater_pa_onskelisten)  # Trenger ikke å være lineært
+
         if verbose:
-            print("%d: Person %d har %d/%d oppfylt" % (romindeks, romfordeling[i], onsker_for_person_i, len(onskemengde[romfordeling[i]])))
-        malverdi += onsker_for_person_i # Her kan vi ha en mer sofisikert målfunksjon
+            print("%d: Person «%s» har %d/%d oppfylt og har målverdi %.1f" % (romindeks,
+                                                                            idliste[romfordeling[i]],
+                                                                            antall_romkamerater_pa_onskelisten,
+                                                                            len(onskemengde[romfordeling[i]]),
+                                                                            verdi_for_person_i))
+            # print("%d: Verdi for person %d: %.1f" % (romindeks, romfordeling[i], verdi_for_person_i))
+        malverdi += verdi_for_person_i
     return malverdi
+
+def antall_onsker_til_verdi(antall):
+    # Tar inn antall romkamerater en person har ønsket seg, og regner ut hvilken verdi dette gir personen
+    return antall ** 0.5
 
 def _muter_par(romfordeling):
     rom = sample(ROMPOPULASJON, 2)
@@ -117,6 +160,25 @@ def muter_romfordeling_exp(romfordeling, p):
         _muter_par(romfordeling)
         if p < random():
             break
+
+
+def lag_romliste_fra_romfordeling(romfordeling, indeksering):
+    # Lage en liste over rom der hvert rom er en liste over personene på rommet.
+    romliste = []
+
+    startindeks = 0
+    for rom in romstorrelser:
+        rom_i = []
+        for i in range(startindeks, startindeks + rom):
+            rom_i.append(romfordeling[i] + indeksering)
+            # if args.verbose == "10":
+            #     print((idliste[romfordeling[i]]), end=", ")
+        romliste.append(rom_i)
+        startindeks += rom
+        # if args.verbose == "10":
+        #     print()
+
+    return romliste
 
 
 def kjoring(P):
@@ -172,27 +234,23 @@ def kjoring(P):
         print("====================Romfordeling====================")
 
     beste_romfordeling = romfordelinger[0][1]
-    startindeks = 0
-    for rom in romstorrelser:
-        rom_i = []
-        for i in range(startindeks, startindeks+rom):
-            rom_i.append(beste_romfordeling[i])
-            if args.verbose == "10":
-                print((beste_romfordeling[i]), end=" ")
-        startindeks += rom
-        if args.verbose == "10":
-            print()
+    beste_romfordeling_liste = lag_romliste_fra_romfordeling(beste_romfordeling, indeksering=1)
+
+    print(beste_romfordeling_liste)
+    print([[idliste[indeks - 1] for indeks in rom] for rom in beste_romfordeling_liste])
+
 
     antall_onsker = sum([len(i) for i in onskeliste])
     if args.verbose == "10":
-        print("Verdi: %d" % romfordelinger[0][0])
+        print("Verdi: %.1f" % romfordelinger[0][0])
         print("Antall ønsker: " + str(antall_onsker))
     else:
         print("{1}\t{0}".format(romfordelinger[0][0], P))
-        
+
+
 def main():
     if True:
-        kjoring(0)
+        kjoring(0.75)
     else:
         for _ in range(10000):
             P = random()

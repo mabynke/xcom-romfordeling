@@ -42,9 +42,9 @@ b(d1, d2) =
     0 ellers.
 
 c(d1, d2) =
-    1 dersom d1 og d2 har samme ønske om ro
+    0.1 dersom d1 og d2 har samme ønske om ro
       og dette ønsket er 1 eller -1.
-   -1 dersom d1 og d2 har motsatte ønsker om ro (-1 og 1 eller 1 og -1)
+   -0.1 dersom d1 og d2 har motsatte ønsker om ro (-1 og 1 eller 1 og -1)
       og d1 ikke har d2 på listen over ønsker.
     0 ellers.
 ```

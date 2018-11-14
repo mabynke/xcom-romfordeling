@@ -69,13 +69,19 @@ version = "0.9.0"
 
 [[Gurobi]]
 deps = ["Compat", "Libdl", "LinQuadOptInterface", "MathProgBase"]
-git-tree-sha1 = "417fe26b36445e5bf6c027c6a14fbf4ea2b7c705"
+git-tree-sha1 = "2e6c179def1b5f121ab21852b2c36e81c9f005db"
 uuid = "2e9cd046-0924-5485-92f1-d5272153d98b"
-version = "0.5.4"
+version = "0.5.5"
 
 [[InteractiveUtils]]
 deps = ["LinearAlgebra", "Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+
+[[JSON]]
+deps = ["Dates", "Distributed", "Mmap", "Sockets", "Test", "Unicode"]
+git-tree-sha1 = "fec8e4d433072731466d37ed0061b3ba7f70eeb9"
+uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+version = "0.19.0"
 
 [[JuMP]]
 deps = ["Calculus", "Compat", "ForwardDiff", "MathProgBase", "Pkg", "ReverseDiffSparse"]
@@ -91,9 +97,9 @@ uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 
 [[LinQuadOptInterface]]
 deps = ["Compat", "MathOptInterface"]
-git-tree-sha1 = "c246e73894d2063ab0697be54ecbb122e604df19"
+git-tree-sha1 = "7baadee415b6fc86519152fdfafb1d3526488171"
 uuid = "f8899e07-120b-5979-ab1d-7b97bb9e1a48"
-version = "0.4.1"
+version = "0.4.2"
 
 [[LinearAlgebra]]
 deps = ["Libdl"]

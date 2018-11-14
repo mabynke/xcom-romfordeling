@@ -41,8 +41,8 @@ function kjør()
 	seoulrom_alt2 = vcat(fill(3, 2), fill(2, 20))
 	# kyotoantalldeltakere = 107
 
-	rom = [i for i in 1:2 for j in 1:1]
-	# rom = kyotorom
+	# rom = [i for i in 1:2 for j in 1:1]
+	rom = kyotorom
 	# antalldeltakere = kyotoantalldeltakere
 	antalldeltakere = sum(rom)
 
@@ -56,12 +56,12 @@ function kjør()
 	# roønske[i] == ikke bestemt enda
 	roønske = rand(0:2)
 
-	# @info "Lager dummyønsker."
+	@info "Lager dummyønsker."
 	# Fylle ønskematrisen
 	# ønsker = dummyønsker(antalldeltakere)
 	# ønsker = tolkønskestreng(read("GA/input/04-onsker.txt", String))
-	ønsker = ønskerfrajson(ARGS[1])
-	@info "Hentet ønskematrise" ønsker
+	ønsker, idliste = verdierogidlistefrajson(ARGS[1])
+	@info "Hentet ID-liste og verdimatrise. OBS! Antar at matrisen er symmetrisk." ønsker idliste
 
 	# MODELLEN
 	@info "Oppretter modellen."
@@ -79,7 +79,9 @@ function kjør()
 
 	# bori[d, r]: Deltaker d bor på rom r. (RomFordeling)
 
-	startbori = naivløsning(antalldeltakere, rom)
+	# startbori = naivløsning(antalldeltakere, rom)
+	startboliste = [[13, 28, 85, 15, 107, 99], [10, 32, 100, 3, 21, 76], [14, 80, 23, 58, 102, 62], [70, 75, 97, 6, 77, 69], [20, 43, 101, 73, 50, 45], [38, 4, 67, 34, 61, 65], [82, 106, 44, 16, 37], [95, 19, 98, 33, 60], [72, 90, 36, 17, 47], [55, 1, 93, 7, 94], [22, 57, 41, 27, 30], [81, 86, 29, 68], [48, 78, 9, 18], [31, 96, 8, 89], [12, 92, 26, 25], [83, 52, 104, 87], [79, 66, 5, 105], [71, 2, 88, 63], [59, 40, 56, 39], [35, 91, 64, 84], [11, 54, 74, 49], [51, 46], [42, 24], [103, 53]]
+	startbori = bolistetilmatrise(startboliste, 1)
 
 	@variable(m, bori[d=1:antalldeltakere, r=1:length(rom)], Bin, start=startbori[d, r])
 	# @variable(m, bori[d=1:antalldeltakere, r=1:length(rom)], Bin)
@@ -88,7 +90,7 @@ function kjør()
 	# bsr[i, j, r]: Deltaker i og deltaker j Bor Sammen på Rom r.
 	@variable(m, bsr[1:antalldeltakere, 1:antalldeltakere, 1:length(rom)], Bin)
 	for i in 1:antalldeltakere
-	    for j in 1:antalldeltakere
+	    for j in 1:i-1
 	        for r in 1:length(rom)
 	            @constraint(m, bsr[i, j, r] <= bori[i, r])
 	            @constraint(m, bsr[i, j, r] <= bori[j, r])
@@ -96,16 +98,6 @@ function kjør()
 	        end
 	    end
 	end
-
-	# # aoø[i]: Antall Oppfylte Ønsker for deltaker nr. i.
-	# @variable(m, aoø[1:antalldeltakere], Int)
-	# for i in 1:antalldeltakere
-	#     # Lager en liste med en binær verdi (1 eller 0) for hvert av i sine ønsker.
-	#     # Lagrer listen midlertidig før vi summerer og finner antall oppfylte ønsker
-	#     # for å omgå at sum() ikke vil summere en tom liste (av typen Array{Any, 1}).
-	#     tmp = [sum(bsr[i, j, :]) for j in 1:antalldeltakere if ønsker[i,j] == 1]
-	#     @constraint(m, aoø[i] == sum(isempty(tmp) ? [0] : tmp))
-	# end
 
 
 	# KRAV
@@ -123,7 +115,7 @@ function kjør()
 	# MÅLFUNKSJON
 	@info "Definerer målfunksjon."
 	# Maksimer antall oppfylte ønsker.
-	@objective(m, Max, sum(ønsker[i, j] * sum(bsr[i, j, :]) for i in 1:antalldeltakere, j in 1:antalldeltakere))
+	@objective(m, Max, sum(ønsker[i, j] * sum(bsr[i, j, :]) for i in 1:antalldeltakere, j in 1:i-1))
 
 	# println(m)
 	skrivønskestreng(ønsker, antalldeltakere)
@@ -145,7 +137,7 @@ function kjør()
 	skrivproblem(antalldeltakere, ønsker)
 
 	# aoø = getvalue(aoø)
-	skrivløsning(antalldeltakere, rom, bori)
+	skrivløsning(antalldeltakere, rom, bori, idliste)
 
 end
 
@@ -204,7 +196,7 @@ function strengtillisteliste(streng, skille1=" ", skille2="\n")
 	return listeliste
 end
 
-function bolistetilmatrise(boliste)
+function bolistetilmatrise(boliste, indeksering=0)
 	# Antar 0-indeksert!!
 
 	antalldeltakere = sum(length(x) for x in boliste)
@@ -213,7 +205,7 @@ function bolistetilmatrise(boliste)
 
 	for r in 1:antallrom
 		for d in boliste[r]
-			bori[d+1, r] = 1
+			bori[d + (1-indeksering), r] = 1
 		end
 	end
 
@@ -225,13 +217,15 @@ function tolkbolistestreng(streng)
 	return bolistetilmatrise(boliste)
 end
 
-function ønskerfrajson(filsti)
+function verdierogidlistefrajson(filsti)
 	antalldeltakere = 0
 	open(filsti, "r") do fil
-		jsonarray = JSON.parse(fil)
+		tolketjson = JSON.parse(fil)
+		jsonarray = tolketjson["verdimatrise"]
+		idliste = tolketjson["idliste"]
 		antalldeltakere = length(jsonarray)
 		# JSON har transponert matrisen og lagt den som en liste av lister.
-		return [jsonarray[j][i] for i in 1:antalldeltakere, j in 1:antalldeltakere]
+		return [jsonarray[j][i] for i in 1:antalldeltakere, j in 1:antalldeltakere], idliste
 	end
 end
 
@@ -257,11 +251,14 @@ function skrivproblem(antalldeltakere, ønsker)
 	println()
 end
 
-function skrivløsning(antalldeltakere, rom, bori)
-	deltakerepårom = [[i for i in 1:antalldeltakere if bori[i, rom] == 1] for rom in 1:length(rom)]
+function skrivløsning(antalldeltakere, rom, bori, idliste)
+	deltakerepårom = [[idliste[i] for i in 1:antalldeltakere if bori[i, rom] == 1] for rom in 1:length(rom)]
+	deltakerepårom_indeks = [[i for i in 1:antalldeltakere if bori[i, rom] == 1] for rom in 1:length(rom)]
 	println("Romplassering (hver liste er et rom, tallene er deltakere):")
 	display(deltakerepårom)
 	println()
+	println(deltakerepårom_indeks)
+	print()
 
 	# println("Antall ønsker oppfylt for hver deltaker:")
 	# display(aoø)
